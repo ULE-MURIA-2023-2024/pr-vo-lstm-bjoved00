@@ -29,12 +29,24 @@ class VisualOdometryDataset(Dataset):
             # read data
             rgb_paths = self.read_images_paths(aux_path)
 
-            if not validation:
-                ground_truth_data = self.read_ground_truth(aux_path)
-                interpolated_ground_truth = self.interpolate_ground_truth(
-                    rgb_paths, ground_truth_data)
+            
+            ground_truth_data = self.read_ground_truth(aux_path)
+            interpolated_ground_truth = self.interpolate_ground_truth(
+                rgb_paths, ground_truth_data)
 
             # TODO: create sequences
+            for i in range(1, len(rgb_paths), 2):
+                
+                position_first_image = np.array(interpolated_ground_truth[i-1][1])
+                position_second_image = np.array(interpolated_ground_truth[i][1])
+                difference = position_second_image - position_first_image
+
+                self.sequences.append({"first_image_path": rgb_paths[i-1][1],
+                                       "second_image_path": rgb_paths[i][1],
+                                       "first_image_timestamp": rgb_paths[i-1][0],
+                                       "second_image_timestamp": rgb_paths[i][0],
+                                       "distance": difference})
+                
 
         self.transform = transform
         self.sequence_length = sequence_length
@@ -47,12 +59,29 @@ class VisualOdometryDataset(Dataset):
 
         # Load sequence of images
         sequence_images = []
-        ground_truth_pos = []
-        timestampt = 0
+        timestamp = 0
+        distance = 0
 
         # TODO: return the next sequence
+        secuencia = self.sequences[idx]
 
-        return sequence_images, ground_truth_pos, timestampt
+        timestamp = secuencia["second_image_timestamp"]
+
+        img1 = cv2.imread(secuencia["first_image_path"])
+        img2 = cv2.imread(secuencia["second_image_path"])
+
+        img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+        img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
+
+        img1 = self.transform(img1)
+        img2 = self.transform(img2)
+
+        sequence_images = [img1, img2]
+        sequence_images = torch.stack(sequence_images)
+
+        distance = torch.Tensor(secuencia["distance"])
+
+        return sequence_images, distance, timestamp
 
     def read_images_paths(self, dataset_path: str) -> Tuple[float, str]:
 

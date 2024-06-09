@@ -1,0 +1,37 @@
+Params:
+
+
+# TODO: Define the params
+
+# LSTM
+hidden_size = 128
+num_layers = 2
+bidirectional = False
+lstm_dropout = 0.5
+
+# dataset
+sequence_length = 2
+batch_size = 16
+
+# train
+learning_rate = 1e-3
+epochs = 2
+
+
+Evaluacion
+
+translational_error.rmse 0.031195 m
+translational_error.mean 0.028596 m
+translational_error.median 0.029305 m
+translational_error.std 0.012467 m
+translational_error.min 0.001742 m
+translational_error.max 0.068226 m
+rotational_error.rmse 1.967327 deg
+rotational_error.mean 1.674367 deg
+rotational_error.median 0.028705 deg
+rotational_error.std 1.032894 deg
+rotational_error.min 0.024858 deg
+rotational_error.max 4.455914 deg
+
+
+

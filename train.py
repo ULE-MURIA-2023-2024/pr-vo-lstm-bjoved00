@@ -10,7 +10,10 @@ from params import *
 
 
 # Create the visual odometry model
-model = VisualOdometryModel(hidden_size, num_layers)
+model = VisualOdometryModel(hidden_size=hidden_size, 
+                            num_layers=num_layers,
+                            bidirectional=bidirectional,
+                            lstm_dropout=lstm_dropout)
 
 transform = T.Compose([
     T.ToTensor(),
@@ -19,7 +22,15 @@ transform = T.Compose([
 
 
 # TODO: Load the dataset
-train_loader = ...
+dataset = VisualOdometryDataset(dataset_path="./dataset/train", 
+                                transform=transform, 
+                                sequence_length=sequence_length,
+                                validation=False)
+
+train_loader = DataLoader(dataset, 
+                          batch_size=batch_size, 
+                          shuffle=True, 
+                          num_workers=4)
 
 
 # train
@@ -37,7 +48,17 @@ for epoch in range(epochs):
     for images, labels, _ in tqdm(train_loader, f"Epoch {epoch + 1}:"):
 
         # TODO: Train the model
-        ...
+        images = images.to(device)
+        labels = labels.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
 
     print(
         f"Epoch [{epoch+1}/{epochs}], Loss: {running_loss / len(train_loader)}")
